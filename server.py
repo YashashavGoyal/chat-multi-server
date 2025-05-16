@@ -3,14 +3,6 @@ from concurrent.futures import ThreadPoolExecutor
 import socket
 ## ........
 
-## Configuring Host Details
-DEFAULT_HOSTIP = '127.0.0.1'
-DEFAULT_HOSTPORT = 8080
-
-host_ip = input(f"Enter host ip (default {DEFAULT_HOSTIP}): ") or DEFAULT_HOSTIP
-input_port = int(input(f"Enter port number (default {DEFAULT_HOSTPORT}): "))
-host_port = input_port if input_port else DEFAULT_HOSTPORT
-## ........
 
 class SocketServer:
 
@@ -18,9 +10,9 @@ class SocketServer:
     clientsAddr = {}
 
     ## Constructor
-    def __init__(self, ip, port):
-        self.host_ip = ip
-        self.host_port = port
+    def __init__(self, host:tuple):
+        self.host_ip = host[0]
+        self.host_port = host[1]
     ## ......
 
     ## Start Server method
@@ -100,3 +92,4 @@ class SocketServer:
                     executor.submit(self._handleClient, client)
                 else:
                     break
+    ## .........
