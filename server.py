@@ -1,7 +1,6 @@
 ## Importing Modules
 from concurrent.futures import ThreadPoolExecutor
 import socket
-import sys
 ## ........
 
 ## Configuring Host Details
@@ -15,6 +14,9 @@ host_port = input_port if input_port else DEFAULT_HOSTPORT
 
 class SocketServer:
 
+    clients = []
+    clientsAddr = {}
+
     ## Constructor
     def __init__(self, ip, port):
         self.host_ip = ip
@@ -22,7 +24,7 @@ class SocketServer:
     ## ......
 
     ## Start Server method
-    def startServer(self):
+    def _startServer(self):
         try:
             self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -36,13 +38,16 @@ class SocketServer:
     ## .........
     
     ## Client Connecting Method
-    def connectClient(self):
+    def _connectClient(self):
         try:
-            self.conn, self.addr = self.soc.accept()
+            conn, addr = self.soc.accept()
 
-            if self.conn:
-                print(f"Connected to {self.addr}")
-                self.conn.send("Successfully connected to server".encode())
+            if conn:
+                print(f"Connected to {addr}")
+                conn.send("Successfully connected to chat server".encode())
+                self.clients.append(conn)
+                self.clientsAddr[conn] = addr
+                return conn
             else : 
                 print("No valid Connection")
 
@@ -56,40 +61,42 @@ class SocketServer:
             self.soc.close()
     ## .........
 
-    ## Sending Message Method
-    def send_msg(self):
+    ## Broadcast Message
+    def _broadcast(self, msg, sender):
         try:
-            while True:
-                msg = input("You : ")
-                if msg.lower() in ("exit", "q"):
-                    self.conn.send(msg.encode())
-                    self.conn.close()
-                    print(f"Connection with {self.addr[0]}:{self.addr[1]} closed on your request")
-                    break
-                self.conn.send(msg.encode())
-        except: 
-            print("error in send msg")
-    ## .........
-
-    ## Receiving Message Method
-    def recv_msg(self):
-        try:
-            while True:
-                msg = self.conn.recv(1024).decode()
-                if not msg or msg.lower() in ("exit", "q"):
-                    print(f"{self.addr[0]}:{self.addr[1]} request to close connection\n")
-                    self.conn.close()
-                    break
-                sys.stdout.write('\r' + ' ' * 80 + '\r')  # clear current input line
-                print(f"{self.addr[0]}:{self.addr[1]} -: {msg}")
-                # print(f"[Server]: {msg}")
-                sys.stdout.write("You : ")
-                sys.stdout.flush()
+            if not msg or msg.lower() in ("exit", "q"):
+                print(f"{self.clientsAddr[sender][0]}:{self.clientsAddr[sender][1]} requested to close connection")
+                self.clients.remove(client)
+                self.clientsAddr.pop(client)
+                client.close()
+            else:
+                for client in self.clients:
+                    if client != sender:
+                        client.send(msg.encode())
         except:
-            print("error in recv_msg")
-            self.soc.close()
+            print("error in broadcasting")
     ## .........
 
-    ## Chat Method
-    def chat(self):
-        pass
+    ## Handling Each Clients Seperately 
+    def _handleClient(self, client):
+        while True:
+            try:
+                msg = client.recv(1024).decode()
+                self._broadcast(msg, client)
+            except:
+                self.clients.remove(client)
+                self.clientsAddr.pop(client)
+                client.close()
+                break
+    ## .........
+
+    ## Chatting Method
+    def online(self):
+        self._startServer()
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            while True:
+                client = self._connectClient()
+                if client:
+                    executor.submit(self._handleClient, client)
+                else:
+                    break
