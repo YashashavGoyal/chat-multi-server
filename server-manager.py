@@ -30,3 +30,5 @@ def create_server():
                 print("Server Manager shutting down.")
                 break
 
+
+create_server()

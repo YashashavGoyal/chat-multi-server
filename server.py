@@ -26,7 +26,7 @@ class SocketServer:
             print("Socket failed with err : %s" %(err))
         else:
             print(f"Server is listening on {self.host_ip}:{self.host_port}")
-            self.soc.settimeout(20)  # set waiting time 
+            # self.soc.settimeout(20)  # set waiting time 
     ## .........
     
     ## Client Connecting Method
