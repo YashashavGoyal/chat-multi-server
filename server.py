@@ -1,6 +1,7 @@
 ## Importing Modules
 from concurrent.futures import ThreadPoolExecutor
 import socket
+import time
 ## ........
 
 
@@ -55,12 +56,14 @@ class SocketServer:
 
     ## Shutdown Server
     def _shutdown(self):
-        print(f"Shuttind down server {self.host_ip}:{self.host_port}")
 
         for client in self.clients:
             try:
-                client.send("Server is shutting down".encode())
+                client.send("Server is shutting down [Ctrl+C to exit]".encode())
+                time.sleep(2)
+                client.send("exit".encode())
                 client.close()
+                print(f"Exiting user {self.clientsAddr[client][0]}:{self.clientsAddr[client][1]}")
             except:
                 pass
         self.clients.clear()
@@ -75,23 +78,15 @@ class SocketServer:
     def _broadcast(self, msg, sender:socket.socket):
         msg = msg.strip() if msg else ""
 
-        if msg.lower() in ("exit", "q"):
-            print(f"{self.clientsAddr[sender][0]}:{self.clientsAddr[sender][1]} requested to close connection")
-            sender.send("exit".encode())
-            if sender in self.clients:
-                self.clients.remove(sender)
-            if sender in self.clientsAddr:
-                self.clientsAddr.pop(sender)
-            sender.close()
-            return
-
         if not msg:
             return  # Empty messages should be ignored
 
         for client in self.clients:
             if client != sender:
                 try:
-                    client.send(msg.encode())
+                    # client.send(msg.encode())
+                    msg_format = f"{self.clientsAddr[sender][0]}:{self.clientsAddr[sender][1]}=> {msg}".encode()
+                    client.send(msg_format)
                 except Exception as e:
                     print(f"Failed to send message to {self.clientsAddr.get(client)}: {e}")
     ## .........
@@ -100,7 +95,7 @@ class SocketServer:
     def _handleClient(self, client:socket.socket):
             try:
                 while True:
-                    msg = client.recv(1024)
+                    msg = client.recv(1024).decode()
                     if not msg:
                         print(f"Client disconnected: {self.clientsAddr.get(client)}")
                         if client in self.clients:
@@ -110,8 +105,17 @@ class SocketServer:
                         client.close()
                         break
 
-                    decoded_msg = msg.decode().strip()
-                    self._broadcast(decoded_msg, client)
+                    elif msg.lower() in ("exit", "q"):
+                        print(f"{self.clientsAddr[client][0]}:{self.clientsAddr[client][1]} requested to close connection")
+                        client.send("exit".encode())
+                        if client in self.clients:
+                            self.clients.remove(client)
+                        if client in self.clientsAddr:
+                            self.clientsAddr.pop(client)
+                        client.close()
+                        return
+
+                    self._broadcast(msg, client)
 
             except (ConnectionResetError, ConnectionAbortedError, OSError) as err:
                 print(f"Connection error with client {self.clientsAddr.get(client)}: {err}")

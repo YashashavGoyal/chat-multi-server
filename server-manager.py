@@ -29,6 +29,7 @@ def get_server_info() -> tuple:
 
 def shutdown_all_servers(signum=None, frame=None):
     for chat in chats:
+        print(f"Shutting down {chat.host_ip}:{chat.host_port} server")
         chat._shutdown()
 
 def create_server():

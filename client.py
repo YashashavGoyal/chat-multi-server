@@ -28,7 +28,7 @@ def recv_msg(soc:socket.socket):
                 break
 
             sys.stdout.write('\r' + ' ' * 80 + '\r')  # clear current input line
-            print(f"Server : {msg}")
+            print(f"{msg}")
             sys.stdout.write("You : ")
             sys.stdout.flush()
 
@@ -51,7 +51,7 @@ def connect_server():
         host_info = get_hosts_info()
         soc.connect(host_info)
         ## Start Receving Thread
-        recv_thread = Thread(target=recv_msg, args=(soc,))
+        recv_thread = Thread(target=recv_msg, args=(soc,), daemon=True) # Find a better way rather than daemon
         recv_thread.start()
         ## ..........
 
