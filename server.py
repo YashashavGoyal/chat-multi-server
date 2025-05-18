@@ -78,8 +78,8 @@ class SocketServer:
                 time.sleep(2)
                 client.send("exit".encode())
                 client.close()
-                print(f"Exiting user {self.clientsAddr[client]["addr"][0]}:{self.clientsAddr[client]["addr"][1]}")
-                log_data = f"Exiting user {self.clientsAddr[client]["addr"][0]}:{self.clientsAddr[client]["addr"][1]}"
+                print(f"Exiting user {self.clientsAddr[client]['addr'][0]}:{self.clientsAddr[client]['addr'][1]}")
+                log_data = f"Exiting user {self.clientsAddr[client]['addr'][0]}:{self.clientsAddr[client]['addr'][1]}"
                 self.logs.info(log_data)
             except:
                 pass
@@ -98,8 +98,8 @@ class SocketServer:
         if not msg:
             return  # Empty messages should be ignored
 
-        msg_format = f"{self.clientsAddr[sender]["name"]} : {msg}"
-        log_data = f"{self.clientsAddr[sender]["addr"]} {msg_format}"
+        msg_format = f"{self.clientsAddr[sender]['name']} : {msg}"
+        log_data = f"{self.clientsAddr[sender]['addr']} {msg_format}"
         self.logs.log(log_data)
 
         for client in self.clients:
@@ -108,8 +108,8 @@ class SocketServer:
                     # client.send(msg.encode())
                     client.send(msg_format.encode())
                 except Exception as err:
-                    print(f"Failed to send message to {self.clientsAddr.get(client, {}).get("name")}: {err}")
-                    log_data = f"{self.clientsAddr[client]["addr"]} {self.clientsAddr[client]["name"]} {err}"
+                    print(f"Failed to send message to {self.clientsAddr.get(client, {}).get('name')}: {err}")
+                    log_data = f"{self.clientsAddr[client]['addr']} {self.clientsAddr[client]['name']} {err}"
                     self.logs.info(log_data)
     ## .........
 
@@ -120,7 +120,7 @@ class SocketServer:
                     msg = client.recv(1024).decode()
                     
                     if "ESC" in msg:
-                        log_data = f"{self.clientsAddr[client]["addr"]} {self.clientsAddr[client]["name"]} close connection"
+                        log_data = f"{self.clientsAddr[client]['addr']} {self.clientsAddr[client]['name']} close connection"
                         self.logs.info(log_data)
                         if client in self.clients:
                             self.clients.remove(client)
@@ -129,7 +129,7 @@ class SocketServer:
 
                     if not msg:
                         print(f"Client disconnected: {self.clientsAddr.get(client).get('name')}")
-                        log_data = f"{self.clientsAddr[client]["addr"]} {self.clientsAddr[client]["name"]} Disconnected"
+                        log_data = f"{self.clientsAddr[client]['addr']} {self.clientsAddr[client]['name']} Disconnected"
                         self.logs.info(log_data)
                         if client in self.clients:
                             self.clients.remove(client)
@@ -139,8 +139,8 @@ class SocketServer:
                         break
 
                     elif msg.lower() in ("exit", "q"):
-                        print(f"{self.clientsAddr[client]["addr"][0]}:{self.clientsAddr[client]["addr"][1]} requested to close connection")
-                        log_data = f"{self.clientsAddr[client]["addr"]} {self.clientsAddr[client]["name"]} requested to close connection"
+                        print(f"{self.clientsAddr[client]['addr'][0]}:{self.clientsAddr[client]['addr'][1]} requested to close connection")
+                        log_data = f"{self.clientsAddr[client]['addr']} {self.clientsAddr[client]['name']} requested to close connection"
                         self.logs.info(log_data)
                         client.send("exit".encode())
                         if client in self.clients:
@@ -153,8 +153,8 @@ class SocketServer:
                     self._broadcast(msg, client)
 
             except (ConnectionResetError, ConnectionAbortedError, OSError) as err:
-                print(f"Connection error with client {self.clientsAddr.get(client, {}).get("name")}: {err}")
-                log_data = f"{self.clientsAddr[client]["addr"]} {self.clientsAddr[client]["name"]} {err}"
+                print(f"Connection error with client {self.clientsAddr.get(client, {}).get('name')}: {err}")
+                log_data = f"{self.clientsAddr[client]['addr']} {self.clientsAddr[client]['name']} {err}"
                 self.logs.info(log_data)
 
             finally:
