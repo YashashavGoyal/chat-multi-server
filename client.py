@@ -1,6 +1,8 @@
+## Importing Modules
 from threading import Thread
 import socket
 import sys
+## ........
 
 
 ## Configuring Host Details
@@ -50,6 +52,8 @@ def connect_server():
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         host_info = get_hosts_info()
         soc.connect(host_info)
+        client_name = input("Enter Your Nick Name: ")
+        soc.send(client_name.encode())
         ## Start Receving Thread
         recv_thread = Thread(target=recv_msg, args=(soc,), daemon=True) # Find a better way rather than daemon
         recv_thread.start()
@@ -72,10 +76,11 @@ def connect_server():
 
     except KeyboardInterrupt:
         try:
+            soc.send("ESC Connection terminated by user.")
             soc.close()
         except:
             pass
-        print("\nClient terminated by user.")
+        print("\nConnection terminated by user.")
 
     finally:
         sys.exit()

@@ -1,7 +1,9 @@
+## Importing Modules
 from concurrent.futures import ThreadPoolExecutor
 from server import SocketServer
 import socket
 import signal
+## ........
 
 
 chats:list[SocketServer] = []
