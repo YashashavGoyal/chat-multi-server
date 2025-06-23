@@ -122,4 +122,4 @@ Feel free to fork the repo, suggest improvements, or open a pull request! Ideas 
 
 ## 📄 License
 
-MIT License © 2025 Innu
+MIT License © 2025 YashashavGoyal
